@@ -1,0 +1,446 @@
+---
+title: "Analisis de las caracteristicas de los diferentes tipos de pokemon de la pokedex"
+subtitle: "EDA-Pokemon/Pokedex"
+author: "Ignacio Rosales, Danisuka Figueroa, Andres Morales"
+date: "`r Sys.Date()`"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    Logotipo: R.png
+    favicon: R.png
+    source_code: embed
+---
+
+```{r Chunk_Principal, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,message=FALSE,warning=FALSE)
+#Iniciacion de las librerias
+c(library(ggplot2),library(tidyverse),library(tidyr),library(readxl),library(readr),library(tsviz),library(DataExplorer),library(shiny),library(dplyr),library(xts),library(zoo),library(corrplot),library(tseries),library(lmtest),library(gridExtra),library(ggfortify),library(forecast),library(fpp),library(colorhex),library(uroot),library(knitr),library(tinytex),library(gganimate),library(av),library(gifski),library(gapminder),library(plotly),library(grid),library(corrplot),library(pander),library(janitor),library(flextable),library(DT),library(gifski),library(webshot),library(webshot2),library(ggstatsplot),library(flexdashboard),library(plotly),library(shiny),library(RColorBrewer),library(gridExtra))
+#library(esquisse) #si la utilizamos pero la comentamos porque es complicada en rstudio
+
+#Creación del dataframe
+Pokemons_BD <- read_csv("Pokemons G4.csv")
+
+```
+
+# Portada {data-orientation=rows}
+
+## Portada
+
+### Portada
+
+<center><h1>Universidad Central de Venezuela
+
+<div style="position: absolute; top: 0; right: 0;">
+![](OIP-removebg-preview.png){width=30%}
+</div>
+
+Facultad de ciencias economicas y sociales
+
+Escuela de Ciencias Estadisticas y actuariales
+
+Materia: Computacion I</h1></center>
+<br><br><br><br><br><br><br><br><br>
+<center><h1><font size=“10”><strong>Trabajo final de computacion</strong></font size></h1></center>
+
+
+
+<h1 style=“text-align: right;”>Realizado por:
+Grupo 4 nro 2<br>
+- Andrés Morales<br>
+C.I.: 84.588.510<br>
+- Daniuska Figueroa<br>
+C.I.: 28.447.298<br>
+- Ignacio Rosales<br>
+C.I.: 31.604.246<br></h1>
+
+
+<center><h1>Caracas, noviembre de 2023</h1></center>
+
+# Problema
+
+## El problema {data-width=500} 
+
+### Planteamiento del problema
+
+#### Planteamiento del problema
+
+Pokémon es una saga de video juegos del género RPG, que se extendió hacía el mundo de la tv, hablar de Pokémon es hablar de un fragmento de la infancia o adolescencia de alguien, fue y es inevitable no hablar de él, si bien es un universo, no infinito pero si extenso, el cuál presenta múltiples variables, criaturas, mundos, y se puede decir que es un multiverso, que funciona de manera que los pokemones son conocidos como criaturas ficticias que poseen rasgos, tipos y características únicas, algo muy similar a un ser vivo, Unos de los principales objetivos es combatir unos con otros tal como ocurre en la naturaleza entre los animales o hace poco en los coliseos con los antiguos romanos, aunque en este caso es un poco más inteligente ya que se toma en cuenta el tipo, si posee ventajas y desventajas al momento de combatir, y hasta formar un equipo junto a otros para mermar debilidades, a  la hora de luchar es de gran importancia la Estrategia y el posicionamiento de los pokemones ya que esto es lo que definirá el triunfo de la partida.  En éste estudio se abarcará el universo de los vídeo juegos que se encuentran divididos Por generaciones y rangos ya sean ordinarios o legendarios, si bien es cierto  que nadie escapa de las estadísticas, Pokémon no es la excepción. 
+Para tener una idea mas amplia de este universo de videojuegos debemos conocer lo que es el Mundo Pokemon también llamado Planeta Pokemon, este es considerado una mezcla entre el planeta tierra Y una versión ficticia del mismo, ya que posee características similares tales como: la gravedad, el sol, la Luna, entre otras cosas, en la serie se hace referencias a países como: Francia, México, entre otros. 
+Es necesario mencionar que todos los datos necesarios para obtener información de los pokemones se encuentran registrados en la pokedex una Enciclopedia virtual algo cómo una clasificación de especies, que les permite a los entrenadores registrar y saber todas las fichas de los pokemones que capturan o ven en su viaje como entrenadores, con respecto a los tipos, sus ventajas y desventajas funciona de una manera Que podría decirse que es basado en «ciencia» (en algunos casos como el tipo fantasma aplicaría creencias y algo de mitología), un corto ejemplo de está conclusión, es la debilidad del tipo hielo contra el tipo fuego, que explicado de manera científica se toma en cuenta los tres estados de la materia ( sólido, gaseoso, y líquido) es bien sabido que el hielo está en estado sólido y este es suceptible a cambiar su estado si la temperatura aumenta a más de cero grados celsius, y un encendedor cuenta con unos 1900 grados celsius, así que en conclusión Pokemon no es algo meramente virtual. 
+Asimismo es necesario destacar que Pokemon posee diferentes generaciones. Una generación es un conjunto de juegos de la franquicia Pokemon en el que en cada actualización se introducen nuevas especies y regiones, en la actualidad existen 9 generaciones de pokemones. 
+
+### Pokedex {data-width=350} 
+
+#### Pokedex
+
+```{r Transformacion_datos, include=FALSE}
+#Seleccionamos las columnas necesarias
+Pokemons_new_BD <- Pokemons_BD %>% select(id, name, rank, type1, type2, hp, atk, def, spatk, spdef, speed, total, height, weight) 
+
+#Cambiamos los nombres de la variables al español
+Pokemons_new_BD <- Pokemons_new_BD %>% rename(nombre = name, rango = rank, tipo1 = type1, tipo2 = type2, vida = hp, ataque = atk, defensa = def, ataque_especial = spatk, defensa_especial = spdef, velocidad = speed, altura = height, peso = weight)
+
+#cambiamos el nombre de los tipo1 y tipo2 al español
+
+#Comprobamos si la BBDD contiene NA(No tiene)
+is.na(Pokemons_new_BD)
+```
+
+```{r Iniciacion de la pokedex, echo=FALSE}
+tabla_Pokemons_new_BD  <- datatable(Pokemons_new_BD, style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla de las principales caracteristicas de la pokedex: ', htmltools::em('Esta tabla muestra las principales caracteristicas de la pokedex.')))
+  tabla_Pokemons_new_BD
+```
+## Imagen de un pokemon {data-width=500}
+
+### Ejemplo de pokemon {data-width=100}
+
+#### *Imagen de pikachu*
+
+![](pika.png){width=50%}
+
+### Preguntas y Objetivos
+ Basándose en esta información se realizara una investigación que responderá las siguientes preguntas:
+ 
+#### Preguntas
+
+¿Cuáles son los valores máximos de las estadísticas de cada tipo?  
+
+¿Cuál es el porcentaje de cada tipo en la pokedex?  
+
+¿Cuántos pokemones según su rango se encuentran en la pokedex?  
+
+¿Qué tipo es más común?  
+
+#### Objetivos
+
+##### Objetivo general 
+
+Analizar las características de los tipos de Pokemones en la Pokedex
+
+##### Objetivos específicos 
+
+*Estudiar cuantos pokemones de cada tipos.
+
+*Calcular la estadística descriptiva de los tipos de pokemones. 
+
+*Determinar los cálculos para encontrar la correlación entre los tipos y sus estadísticas.
+
+*Interpretar resultados. 
+
+# Pregunta 1 {data-orientation=rows data-navmenu="Analisis"}
+
+¿Cuáles son los valores mínimos y máximos de las estadísticas de cada tipo? Agrupamos los datos por tipo1 de Pokemon y calculamos los valores mínimos y máximos de las estadísticas para cada grupo, en este caso tomamos el Máximo solamente
+
+## Tabla de Frecuencias {data-width=750, .tabset .tabset-fade} 
+
+### tabla 
+
+```{r Pregunta 1, echo=FALSE}
+#Pregunta 1 ¿Cuáles son los valores mínimos y máximos de las estadísticas de cada tipo? 
+# Agrupamos los datos por tipo1 de Pokemon y calculamos los valores mínimos y máximos de las estadísticas para cada grupo
+tipos_estadisticas_max <- Pokemons_new_BD %>%
+  group_by(tipo1) %>%
+  summarize(Maximo_Vida = max(vida),
+            Maximo_Ataque = max(ataque),
+            Maximo_Defensa = max(defensa),
+            Maximo_Ataque_especial = max(ataque_especial),
+            Maximo_Defensa_especial = max(defensa_especial),
+            Maximo_Velocidad = max(velocidad),
+            Maximo_Altura = max(altura),
+            Maximo_peso = max(peso)) 
+#Esto ordenada descendientemente para que luego el grafico quede ordenado
+tipos_estadisticas_max <- tipos_estadisticas_max %>% arrange(desc(Maximo_Vida), desc(Maximo_Ataque), desc(Maximo_Defensa), desc(Maximo_Ataque_especial), desc(Maximo_Defensa_especial), desc(Maximo_Velocidad), desc(Maximo_Altura), desc(Maximo_peso))
+
+tabla_tipos_estadisticas_max <- datatable(Pokemons_new_BD %>%
+  group_by(tipo1) %>%
+  summarize(Maximo_Vida = max(vida),
+            Maximo_Ataque = max(ataque),
+            Maximo_Defensa = max(defensa),
+            Maximo_Ataque_especial = max(ataque_especial),
+            Maximo_Defensa_especial = max(defensa_especial),
+            Maximo_Velocidad = max(velocidad),
+            Maximo_Altura = max(altura),
+            Maximo_peso = max(peso)), style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla del valor maximo de las estadisticas: ', htmltools::em('Esta tabla muestra el valor maximo de la estadistica en cada tipo.')))
+  tabla_tipos_estadisticas_max
+```
+
+### Graficos Vida
+
+```{r Grafico_pregunta1_vida, fig.align="center", echo=FALSE, fig.width= 7, fig.height= 7}
+Grafico_Maximo_Vida <- ggplot(tipos_estadisticas_max) + aes(x = reorder(tipo1, Maximo_Vida), y =         Maximo_Vida, fill = Maximo_Vida) + geom_col() + 
+labs(title = "Gráfico de barras de la vida máxima por tipo1",
+     subtitle = "Maxima vida por cada tipo 1",
+     x = "Tipo1",
+     y = "Vida Máxima", 
+     color = "Vida Máxima", 
+     fill = "Vida Máxima") +
+  theme_bw() +
+  scale_fill_gradient(low = "#03045E", high = "#CAF0F8") 
+ggplotly(Grafico_Maximo_Vida)
+```
+
+### Grafico Ataque
+
+```{r Grafico_pregunta1_Ataque, fig.align="center", echo=FALSE, fig.width= 12, fig.height= 12}
+Grafico_Maximo_Ataque <- ggplot(tipos_estadisticas_max) + aes(x = reorder(tipo1, Maximo_Ataque), y =         Maximo_Ataque, fill = Maximo_Ataque) + geom_col() + 
+labs(title = "Gráfico de barras de la maximo ataque por tipo1",
+     subtitle = "Maxima ataque por cada tipo 1",
+     x = "Tipo1",
+     y = "Maximo ataque", 
+     color = "Maximo ataque", 
+     fill = "Maximo ataque") + theme_bw() + 
+  scale_fill_gradient(low = "#EF476F", high = "#FFD166") 
+ggplotly(Grafico_Maximo_Ataque)
+```
+
+### Grafico Defensa 
+
+```{r Grafico_pregunta1_Defensa, fig.align="center", echo=FALSE, fig.width= 12, fig.height= 12}
+Grafico_Maximo_Defensa <- ggplot(tipos_estadisticas_max) + aes(x = reorder(tipo1, Maximo_Defensa), y =         Maximo_Defensa, fill = Maximo_Defensa) + geom_col() + 
+labs(title = "Gráfico de barras de la maximo defensa por tipo1",
+     subtitle = "Maxima defensa por cada tipo 1",
+     x = "Tipo1",
+     y = "Maxima defensa", 
+     color = "Maxima defensa", 
+     fill = "Maximo defensa") + theme_bw() + 
+  scale_fill_gradient(low = "#6BBAEC", high = "#BCC4DB") 
+ggplotly(Grafico_Maximo_Defensa)
+```
+
+### Grafico Velocidad
+
+```{r Grafico_pregunta1_Velocidad, fig.align="center", echo=FALSE, fig.width= 12, fig.height= 12}
+Grafico_Maximo_Velocidad <- ggplot(tipos_estadisticas_max) + aes(x = reorder(tipo1, Maximo_Velocidad), y =         Maximo_Velocidad, fill = Maximo_Velocidad) + geom_col() + 
+labs(title = "Gráfico de barras de la maxima velocidad por tipo1",
+     subtitle = "Maxima velocidad por cada tipo 1",
+     x = "Tipo1",
+     y = "Maxima velocidad", 
+     color = "Maxima velocidad", 
+     fill = "Maximo velocidad") + theme_bw() + 
+  scale_fill_gradient(low = "#D19C1D", high = "#472C1B") 
+ggplotly(Grafico_Maximo_Velocidad)
+```
+
+
+## Correlaciones{data-width=100} {.tabset .tabset-fade}
+
+### Graficos correlacion 
+
+```{r Grafico_pregunta1_Ataque_especial_cor_Defensa_Especial, fig.align="center", echo=FALSE, fig.width= 7, fig.height= 7}
+Grafico_Maximo_AtaqueE_cor_DefensaE<- ggplot(tipos_estadisticas_max, aes(x = Maximo_Ataque_especial, y = Maximo_Defensa_especial, color = tipo1)) +
+  geom_point() +
+  labs(title = "Gráfico de dispersión de los ataques maximos y las defensa maximas por tipo",
+       x = "Ataque Especial",
+       y = "Defensa Especial",
+       color = "Tipo")
+ggplotly(Grafico_Maximo_AtaqueE_cor_DefensaE)
+```
+
+### Correlacion altura peso
+
+```{r Grafico_pregunta1_Ataque_Altura_cor_Defensa_peso, fig.align="center", echo=FALSE, fig.width= 12, fig.height= 12}
+Grafico_Maximo_Altura_cor_peso <- ggplot(tipos_estadisticas_max, aes(x = Maximo_Altura, y = Maximo_peso, color = tipo1)) +
+  geom_point() +
+  labs(title = "Gráfico de dispersión de las alturas maximos y los pesos maximas por tipo",
+       x = "Altura",
+       y = "Peso",
+       color = "Tipo")
+ggplotly(Grafico_Maximo_Altura_cor_peso)
+```
+
+### Grafico Boxplot
+
+```{r Grafico_preguntararo, fig.align="center", echo=FALSE, fig.width= 15, fig.height= 15}
+# Crear el boxplot
+Grafico_Vida_tipo <- ggplot(Pokemons_new_BD, aes(x = tipo1, y = vida, fill = tipo1)) +
+  geom_boxplot() +
+  # Cambiar los títulos
+  labs(title = "Boxplot de vida por tipo de Pokémon",
+       x = "Tipo de Pokémon",
+       y = "Vida",
+       fill = "Tipo de Pokémon") +
+  # Cambiar el tema
+  theme_minimal() +
+  # Cambiar los colores
+  scale_fill_manual(values = rainbow(18))
+ggplotly(Grafico_Vida_tipo)
+```
+
+# Pregunta 2 {data-orientation=rows data-navmenu="Analisis"}
+
+## Tabla de Frecuencias {data-width=750}
+
+### Frecuencias
+
+```{r Pregunta 2, echo=FALSE}
+#Pregunta 2 ¿Cuál es el porcentaje de cada tipo en la pokedex?  
+
+#A la base dados le contamos cuantos tipos1 de cada 1 hay luego sacamos frecuencia relativas,acumuladas y porcentuales, para luego imprimirlo todo en una tabla
+porcentajes <- Pokemons_new_BD %>% 
+  count(tipo1) %>% 
+  mutate(FR = round((n/sum(n))*100))%>% 
+  mutate(F_Relativa_porcentual = paste(FR,"%",sep=""))
+
+tabla_porcentajes <- datatable(Pokemons_new_BD %>% 
+  count(tipo1) %>% 
+  mutate(FR = round((n/sum(n))*100))%>% 
+  mutate(F_Relativa_porcentual = paste(FR,"%",sep="")), style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla de porcentajes: ', htmltools::em('Esta tabla muestra cuanto porcentaje hay por cada tipo.')))
+  tabla_porcentajes
+```
+
+## Parte Grafica{data-width=250}
+
+### Graficos 
+
+*¿Cuál es el porcentaje de cada tipo en la pokedex? *
+
+```{r Grafico_pregunta_2, fig.align="center", echo=FALSE, fig.width= 17, fig.height= 7}
+ggplot(porcentajes, aes(x = tipo1, y = FR)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Tipo 1", y = "Frecuencia relativa (%)", title = "Distribución de pokemons por tipo 1")
+```
+
+# Pregunta 3 {data-navmenu="Analisis"}
+
+## Tabla de Frecuencias {data-width=500}
+
+### Frecuencias 
+
+```{r Pregunta 3, echo=FALSE}
+#Pregunta 3 ¿Cuántos pokemones se encuentran en la pokedex según su rango?
+rangos <- Pokemons_new_BD %>%
+  count(rango) %>% 
+  mutate(FR = round((n/sum(n))*100, 2))%>% 
+  mutate(F_Relativa_porcentual = paste(FR,"%",sep=""))
+
+tabla_rangos <- datatable(Pokemons_new_BD %>%
+  count(rango), style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla de rangos: ', htmltools::em('Esta tabla muestra cuantos pokemons hay por cada rango.')))
+  tabla_rangos
+```
+
+## Graficos {data-width=500} 
+
+### Graficos barras
+
+¿Cuántos pokemones se encuentran en la pokedex según su rango?
+
+```{r Grafico_pregunta_3, fig.align="center", echo=FALSE, fig.width= 15, fig.height= 15}
+rango_barras <- ggplot(rangos, aes(x = rango, y = n)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "Rango", y = "Frecuencia", title = "Frecuencia de pokemons por rango")
+ggplotly(rango_barras)
+```
+
+### Graficos Torta
+
+```{r Grafico_pregunta_3_torta, fig.align="center", echo=FALSE, fig.width= 30, fig.height= 30}
+rango_circular <- pie(rangos$FR, labels = rangos$F_Relativa_porcentual, main = "Distribución de pokemons por rango")
+```
+
+# Pregunta 4 {data-navmenu="Analisis" .hidden}
+
+## Tabla de Frecuencias {data-width=500}
+
+### Frecuencias 
+
+```{r Pregunta 4, echo=FALSE, fig.width= 12, fig.height= 12}
+#Pregunta 4 #¿Cual es la relación de un tipo con otro?
+#H0 : no existe relación entre el tipo1 y el tipo2
+#H1 : si existe relación entre el tipo1 y el tipo
+
+# Filtramos el dataframe por tipo1 y tipo2 para controlar el chi cuadrado
+chi_cuadrado <- Pokemons_new_BD %>%
+  filter(tipo1 %in% c("fire", "water"), 
+         tipo2 %in% c("flying", "poison")) %>% 
+  select(tipo1, tipo2)
+
+#Hacemos la prueba chi-cuadrado controlada 
+with(chi_cuadrado,chisq.test(tipo1, tipo2, correct = TRUE, p = rep(1/length(tipo1),length(tipo1))))
+#Graficamos el chi cuadrado
+plot(table(chi_cuadrado$tipo1,chi_cuadrado$tipo2))
+
+print("Este valor puede no ser exacto al aproximarse")
+
+```
+
+# Pregunta 4 {data-navmenu="Analisis"}
+
+## Tabla de Frecuencias {data-width=500}
+
+### Frecuencias 
+
+¿Qué tipo es más común? 
+
+```{r Pregunta 5, echo=FALSE}
+#Pregunta 5 ¿Qué tipo es más común?  
+tabla_tipos_1 <- datatable(Pokemons_new_BD %>% select(tipo1) %>% count(tipo1) %>% arrange(desc(n)), style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla de los mas comunes: ', htmltools::em('Esta tabla muestra cuantos los tipos1 de pokemons mas comunes.')))
+  tabla_tipos_1
+                                                      
+# Contamos el número de veces que aparece cada tipo en el tipo1
+tabla_tipo1 <- table(Pokemons_new_BD$tipo1)
+
+# Encontramos el tipo que aparece con mayor frecuencia
+tipo_mas_comun1 <- names(tabla_tipo1)[which.max(tabla_tipo1)]
+
+# Imprimimos el tipo1 que aparece con mayor frecuencia
+cat("El tipo más común en el tipo1 es", tipo_mas_comun1, "\n")
+```
+
+## Tipo mas comun {data-width=500}
+
+### Tipo mas comun
+
+```{r Pregunta 5.2, echo=FALSE}
+tabla_tipos_2 <- datatable(Pokemons_new_BD %>% select(tipo2) %>% count(tipo2) %>% arrange(desc(n)), style = 'bootstrap', class = c('table-bordered table-condensed','hover'), colnames = c('Nro' = 1), caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: center;','Tabla de los mas comunes: ', htmltools::em('Esta tabla muestra cuantos los tipos2 de pokemons mas comunes.')))
+  tabla_tipos_2
+  
+# Excluimos el valor "none"
+tipo_2none <- subset(Pokemons_new_BD, tipo2 != "none")
+
+# Calcular la frecuencia de cada valor
+tabla_tipo2 <- table(tipo_2none$tipo2)
+
+# Encontrar el tipo2 más común
+tipo2_mas_comun <- names(sort(tabla_tipo2, decreasing = TRUE)[2])
+
+# Imprimimos el tipo2 más común
+cat("El tipo más común en el tipo2 es", tipo2_mas_comun, "\n")
+
+```
+
+# Interpretacion
+
+## Interpretaciones
+
+### Conclusiones interpretadas
+<font size=“20”><strong>
+Después de realizar un análisis estadístico sobre los tipos de Pokémon, podemos llegar a varias conclusiones interesantes:
+
+1.Diversidad de tipos: Existe una amplia variedad de tipos de Pokémon, cada uno con su propia distribución y características únicas. Algunos tipos son más comunes que otros, lo que refleja la diversidad en el mundo Pokémon.
+
+2.Equilibrio en la distribución: A pesar de la diversidad, es posible que observemos un cierto grado de equilibrio en la distribución de los tipos, lo que podría reflejar un diseño cuidadoso por parte de los creadores del juego.
+
+
+3.Fortalezas y debilidades: Al analizar las vulnerabilidades y resistencias de cada tipo de Pokémon, podemos entender mejor las dinámicas de combate y estrategia en el juego Pokémon, lo que podría ser útil para entrenadores y jugadores competitivos.
+
+4.Importancia del tipo secundario: Los tipos secundarios podrían desempeñar un papel crucial en la versatilidad y las habilidades únicas de cada Pokémon, lo que podría influir en las estrategias de juego y las preferencias de los entrenadores.
+
+
+5.Relación tipo y estadísticas: Los tipos de Pokémon podrían estar relacionados con ciertas características y estadísticas, lo que podría influir en la estrategia de batalla y la percepción de los jugadores sobre la fuerza relativa de cada tipo.
+
+En general, un análisis detallado de los tipos de Pokémon desde una perspectiva estadística no solo proporciona conocimientos sobre la distribución y las características de los Pokémon, sino que también puede ofrecer información valiosa para la comunidad Pokémon en términos de estrategia, diseño de equipos y la exploración del rico ecosistema que constituye el mundo de Pokémon.
+</strong></font size>
+
+# Bibliografia
+
+## Bibliografia
+
+### Bibliografia
+<center><h1>
+https://www.pokemon.com/es<br>
+https://www.pokemon.com/es/pokedex<br>
+https://www.youtube.com/user/PokemonOficialES<br>
+https://watch.pokemon.com/es-xl/#/<br></h1>
+</center>
+
